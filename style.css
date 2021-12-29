@@ -1,0 +1,57 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+html {
+  overflow: hidden;
+}
+
+.maincontainer {
+  background-color: lightseagreen;
+  height: 100vh;
+}
+
+#ball {
+  left: 300px;
+  right: 200px;
+  position: absolute;
+  display: block;
+  transition: all 7ms;
+  box-sizing: border-box;
+  border-radius: 100px;
+  width: 40px;
+  height: 40px;
+  background-color: yellow;
+  z-index: 10;
+}
+
+.bar {
+  position: absolute;
+  /* display: block; */
+  transition: all 7ms;
+  box-sizing: border-box;
+  width: 50px;
+  height: 200px;
+  background-color: black;
+}
+
+.scoreContainer {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.score {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid green;
+  font-size: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+#playerScore {
+}
+
+#aiScore {
+}
