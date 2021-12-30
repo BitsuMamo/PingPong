@@ -10,7 +10,7 @@ const playerScore = document.getElementById('playerScore');
 const playerSpeed = 10;
 const aiSpeed = 10;
 const winScore = 5;
-const initialSpeed = 5;
+const initialSpeed = (window.innerHeight + window.innerWidth) / 500;
 // Constants for game border
 const border = {
     top: 0, 
@@ -31,14 +31,14 @@ let playerMode = sessionStorage.getItem('playerMode');
 
 // variable for width and height of the bar or paddle
 let barDimensions = {
-    width: 50,
-    height: 200
+    width: window.innerWidth / 40,
+    height: window.innerHeight / 5
 }
 
 // Variable for ball diemensions. 
 let ballDimensions = {
-    width: 40,
-    height: 40
+    width: window.innerWidth / 40,
+    height: window.innerWidth / 40
 }
 
 // Variable to track the balls positon starts at the middle.
@@ -106,6 +106,15 @@ function random(min, max){
 // Constructor that is run first. Basically places all the elements on the screen to their respective positions.
 // and show the start score.
 function construct(){
+    playerBar.style.width = barDimensions.width + 'px';
+    playerBar.style.height = barDimensions.height + 'px';
+    
+    aiBar.style.width = barDimensions.width + 'px';
+    aiBar.style.height = barDimensions.height + 'px';
+
+    ball.style.width = ballDimensions.width + 'px';
+    ball.style.height = ballDimensions.height + 'px';
+
     ball.style.left = ballPosition.x + 'px';
     ball.style.top = ballPosition.y + 'px';
 
