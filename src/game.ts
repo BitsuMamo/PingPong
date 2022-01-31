@@ -40,8 +40,8 @@ const BALL_POSITION = {
 }
 
 const BALL_SPEED = {
-  x: -10,
-  y: 0
+  x: 10,
+  y: 10
 }
 
 class Player {
@@ -153,22 +153,49 @@ class Collision {
   ball: Ball;
   left_player: Player;
   right_player: Player;
+  addBallCollisionToPaddle;
 
   constructor(ball: Ball, left_player: Player, right_player: Player) {
     this.ball = ball;
     this.left_player = left_player;
     this.right_player = right_player;
 
+    this.addBallCollisionToPaddle = (player: Player) => {
+        if(ball.position.y >= player.position.y && ball.position.y < (player.position.y + (BAR_DIMENSION.height / 5))){
+          if(ball.speed.y <= 0){
+            ball.speed.y = BALL_SPEED.y;
+          }
+          ball.speed.x *= -1;
+          // ball.speed.y *= -1;
+          ball.speed.y *= Math.random();
+          console.log("TOP");
+        }
+
+        if(ball.position.y >= (player.position.y + (BAR_DIMENSION.height / 5)) && ball.position.y <= (player.position.y + (BAR_DIMENSION.height * 2 / 5))){
+          ball.speed.y = 0;
+          ball.speed.x *= -1;
+          console.log("MIDDLE");
+        } 
+
+        if(ball.position.y > (player.position.y + (BAR_DIMENSION.height * 2 / 5)) && ball.position.y <= (player.position.y + BAR_DIMENSION.height)){
+          if(ball.speed.y <= 0){
+            ball.speed.y = BALL_SPEED.y;
+          }
+          ball.speed.x *= -1;
+          ball.speed.y *= Math.random();
+          console.log("BOTTOM");
+        }
+
+    }
+
     this.ballPaddleCollision = () => {
       if (ball.position.x <= (left_player.position.x + BAR_DIMENSION.width) + BALL_RADIUS / 2) {
-        if (ball.position.y >= left_player.position.y && ball.position.y <= left_player.position.y + BAR_DIMENSION.height) {
-          ball.speed.x *= -1;
-        }
+        this.addBallCollisionToPaddle(left_player);
       }
 
       if (ball.position.x >= (right_player.position.x - BAR_DIMENSION.width) - BALL_RADIUS / 2) {
         if (ball.position.y >= right_player.position.y && ball.position.y <= right_player.position.y + BAR_DIMENSION.height) {
-          ball.speed.x *= -1;
+          this.addBallCollisionToPaddle(right_player);
         }
       }
     }
