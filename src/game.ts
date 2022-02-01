@@ -12,10 +12,10 @@ const WIN_SCORE = 5;
 
 const BAR_DIMENSION = {
   width: window.innerWidth / 70,
-  height: window.innerHeight / 4
+  height: window.innerHeight / 5
 }
 
-const BALL_RADIUS = 30;
+const BALL_RADIUS = window.innerWidth / 60;
 
 const BORDER = {
   top: 0,
@@ -40,8 +40,13 @@ const BALL_POSITION = {
 }
 
 const BALL_SPEED = {
-  x: 10,
-  y: 10
+  x: 5,
+  y: 5
+}
+
+let previous_ball_pos = {
+  x: BALL_POSITION.x,
+  y: BALL_POSITION.y,
 }
 
 class Player {
@@ -86,20 +91,25 @@ class Player {
 
 class AI extends Player {
   ball_position: Position;
-  calculate_postion;
+  predict_position;
 
   constructor(speed: number, bar: HTMLElement, position: Position, score_element: HTMLElement, ball_position: Position) {
     super(speed, bar, position, score_element);
     this.ball_position = ball_position;
 
-    this.calculate_postion = () => {
-      if (this.ball_position.y + BALL_RADIUS > this.position.y + BAR_DIMENSION.height && this.position.y <= BORDER.bottom - BAR_DIMENSION.height) {
-        this.position.y += this.speed;
-      } else if (this.ball_position.y - BALL_RADIUS < this.position.y + BAR_DIMENSION.height && this.position.y >= BORDER.top) {
-        this.position.y -= this.speed;
+    this.predict_position = () => {
+      if (previous_ball_pos.x - ball_position.x < 0) {
+
+        if (this.ball_position.y + BALL_RADIUS > this.position.y + BAR_DIMENSION.height + 20 && this.position.y <= BORDER.bottom - BAR_DIMENSION.height) {
+          this.position.y += this.speed;
+        } else if (this.ball_position.y - BALL_RADIUS < this.position.y + BAR_DIMENSION.height + 20 && this.position.y >= BORDER.top) {
+          this.position.y -= this.speed;
+        }
+
       }
 
       this.draw();
+      previous_ball_pos.x = ball_position.x;
     }
   }
 
@@ -107,8 +117,8 @@ class AI extends Player {
 
 class Ball {
   speed: Speed = {
-    x: 10,
-    y: 10
+    x: BALL_SPEED.x,
+    y: BALL_SPEED.y
   };
   position: Position = {
     x: window.innerWidth / 2 - BALL_RADIUS / 2,
@@ -161,30 +171,29 @@ class Collision {
     this.right_player = right_player;
 
     this.addBallCollisionToPaddle = (player: Player) => {
-        if(ball.position.y >= player.position.y && ball.position.y < (player.position.y + (BAR_DIMENSION.height / 5))){
-          if(ball.speed.y <= 0){
-            ball.speed.y = BALL_SPEED.y;
-          }
-          ball.speed.x *= -1;
-          // ball.speed.y *= -1;
-          ball.speed.y *= Math.random();
-          console.log("TOP");
+      if (ball.position.y >= player.position.y && ball.position.y < (player.position.y + (BAR_DIMENSION.height / 5))) {
+        if (ball.speed.y <= 0) {
+          ball.speed.y = BALL_SPEED.y;
         }
+        ball.speed.x *= -1;
+        ball.speed.y  = -(Math.random() *  BALL_SPEED.y + 2);
+        console.log("TOP");
+      }
 
-        if(ball.position.y >= (player.position.y + (BAR_DIMENSION.height / 5)) && ball.position.y <= (player.position.y + (BAR_DIMENSION.height * 2 / 5))){
-          ball.speed.y = 0;
-          ball.speed.x *= -1;
-          console.log("MIDDLE");
-        } 
+      if (ball.position.y >= (player.position.y + (BAR_DIMENSION.height / 5)) && ball.position.y <= (player.position.y + (BAR_DIMENSION.height * 2 / 5))) {
+        ball.speed.y = 0;
+        ball.speed.x *= -1;
+        console.log("MIDDLE");
+      }
 
-        if(ball.position.y > (player.position.y + (BAR_DIMENSION.height * 2 / 5)) && ball.position.y <= (player.position.y + BAR_DIMENSION.height)){
-          if(ball.speed.y <= 0){
-            ball.speed.y = BALL_SPEED.y;
-          }
-          ball.speed.x *= -1;
-          ball.speed.y *= Math.random();
-          console.log("BOTTOM");
+      if (ball.position.y > (player.position.y + (BAR_DIMENSION.height * 2 / 5)) && ball.position.y <= (player.position.y + BAR_DIMENSION.height)) {
+        if (ball.speed.y <= 0) {
+          ball.speed.y = BALL_SPEED.y;
         }
+        ball.speed.x *= -1;
+        ball.speed.y  = Math.random() *  BALL_SPEED.y + 2;
+        console.log("BOTTOM");
+      }
 
     }
 
@@ -208,11 +217,13 @@ class Collision {
       if (ball.position.x < BORDER.left) {
         right_player.score += 1;
         ball.reset_position(BALL_POSITION);
+        ball.reset_speed({x: -ball.speed.x, y: BALL_SPEED.y});
       }
 
       if (ball.position.x > BORDER.right) {
         left_player.score += 1;
         ball.reset_position(BALL_POSITION);
+        ball.reset_speed({x: -ball.speed.x, y: BALL_SPEED.y});
       }
 
     }
@@ -265,16 +276,16 @@ class Game {
     let left_player: any, right_player: any;
     switch (this.playerMode) {
       case 'onePlayer':
-        left_player = new Player(10, this.left_bar, LEFT_BAR_POSITION, this.left_bar_score);
-        right_player = new AI(10, this.right_bar, RIGHT_BAR_POSITION, this.right_bar_score, ball.position);
+        left_player = new Player(5, this.left_bar, LEFT_BAR_POSITION, this.left_bar_score);
+        right_player = new AI(5, this.right_bar, RIGHT_BAR_POSITION, this.right_bar_score, ball.position);
 
         this.controller[87] = { pressed: false, func: left_player.paddleUp };
         this.controller[83] = { pressed: false, func: left_player.paddleDown };
 
         break;
       case 'twoPlayer':
-        left_player = new Player(10, this.left_bar, LEFT_BAR_POSITION, this.left_bar_score);
-        right_player = new Player(10, this.right_bar, RIGHT_BAR_POSITION, this.right_bar_score);
+        left_player = new Player(5, this.left_bar, LEFT_BAR_POSITION, this.left_bar_score);
+        right_player = new Player(5, this.right_bar, RIGHT_BAR_POSITION, this.right_bar_score);
 
         this.controller[87] = { pressed: false, func: left_player.paddleUp };
         this.controller[83] = { pressed: false, func: left_player.paddleDown };
@@ -283,8 +294,8 @@ class Game {
 
         break;
       case 'noPlayer':
-        left_player = new AI(10, this.left_bar, LEFT_BAR_POSITION, this.left_bar_score, ball.position);
-        right_player = new AI(10, this.right_bar, RIGHT_BAR_POSITION, this.right_bar_score, ball.position);
+        left_player = new AI(5, this.left_bar, LEFT_BAR_POSITION, this.left_bar_score, ball.position);
+        right_player = new AI(5, this.right_bar, RIGHT_BAR_POSITION, this.right_bar_score, ball.position);
         break;
       default:
         left_player = new Player(10, this.left_bar, LEFT_BAR_POSITION, this.left_bar_score);
@@ -345,16 +356,16 @@ class Game {
       // Movement calculation needed depending on the player type(AI, Player)
       switch (this.playerMode) {
         case 'onePlayer':
-          right_player.calculate_postion();
+          right_player.predict_position();
           break;
         case 'twoPlayer':
           break;
         case 'noPlayer':
-          left_player.calculate_postion();
-          right_player.calculate_postion();
+          left_player.predict_position();
+          right_player.predict_position();
           break;
         default:
-          right_player.calculate_postion();
+          right_player.predict_position();
           break;
       }
 
