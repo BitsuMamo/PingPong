@@ -62,7 +62,7 @@ class AI extends Player {
         super(speed, bar, position, score_element);
         this.ball_position = ball_position;
         this.predict_position = () => {
-            if (previous_ball_pos.x - ball_position.x < 0) {
+            if (Math.abs(position.x - ball_position.x) <= window.innerWidth / 2) {
                 if (this.ball_position.y + BALL_RADIUS > this.position.y + BAR_DIMENSION.height + 20 && this.position.y <= BORDER.bottom - BAR_DIMENSION.height) {
                     this.position.y += this.speed;
                 }
@@ -106,6 +106,7 @@ class Ball {
 }
 class Collision {
     constructor(ball, left_player, right_player) {
+        this.counter = 0;
         this.ball = ball;
         this.left_player = left_player;
         this.right_player = right_player;
@@ -116,11 +117,13 @@ class Collision {
                 }
                 ball.speed.x *= -1;
                 ball.speed.y = -(Math.random() * BALL_SPEED.y + 2);
+                this.counter = 0;
                 console.log("TOP");
             }
             if (ball.position.y >= (player.position.y + (BAR_DIMENSION.height / 5)) && ball.position.y <= (player.position.y + (BAR_DIMENSION.height * 2 / 5))) {
                 ball.speed.y = 0;
                 ball.speed.x *= -1;
+                this.counter += 1;
                 console.log("MIDDLE");
             }
             if (ball.position.y > (player.position.y + (BAR_DIMENSION.height * 2 / 5)) && ball.position.y <= (player.position.y + BAR_DIMENSION.height)) {
@@ -129,7 +132,14 @@ class Collision {
                 }
                 ball.speed.x *= -1;
                 ball.speed.y = Math.random() * BALL_SPEED.y + 2;
+                this.counter = 0;
                 console.log("BOTTOM");
+            }
+            if (this.counter >= 3) {
+                if (ball.speed.y <= 0) {
+                    ball.speed.y = BALL_SPEED.y;
+                }
+                ball.speed.y = Math.random() * BALL_SPEED.y + 2;
             }
         };
         this.ballPaddleCollision = () => {
@@ -189,7 +199,7 @@ class Game {
         switch (this.playerMode) {
             case 'onePlayer':
                 left_player = new Player(5, this.left_bar, LEFT_BAR_POSITION, this.left_bar_score);
-                right_player = new AI(5, this.right_bar, RIGHT_BAR_POSITION, this.right_bar_score, ball.position);
+                right_player = new AI(2, this.right_bar, RIGHT_BAR_POSITION, this.right_bar_score, ball.position);
                 this.controller[87] = { pressed: false, func: left_player.paddleUp };
                 this.controller[83] = { pressed: false, func: left_player.paddleDown };
                 break;
@@ -260,8 +270,8 @@ class Game {
                 case 'twoPlayer':
                     break;
                 case 'noPlayer':
-                    left_player.predict_position();
                     right_player.predict_position();
+                    left_player.predict_position();
                     break;
                 default:
                     right_player.predict_position();
